@@ -1,5 +1,5 @@
-var canvas = document.getElementById("canvas");
-var ctx = canvas.getContext("2d");
+let canvas = document.getElementById("canvas");
+let ctx = canvas.getContext("2d");
 let score = 0,
      Highscore = 0,
      targets = [],
@@ -7,9 +7,10 @@ let score = 0,
           x: 0,
           y: 0
      };
+let messages = [];
 const targetcount = 5;
 const max_distance = 500;
-const max_life_time = 5000;//ms
+const max_life_time = 5000; //ms
 let tracers = false;
 let hits = [];
 
@@ -24,20 +25,25 @@ document.onmousemove = function(event) {
      mousepos.y = event.clientY;
 };
 
-function Target(x, y, radius) {
+function Target(x, y) {
      this.x = x;
      this.y = y;
-     this.radius = radius;
+     this.radius = 100;
      this.show = function() {
-          let outercolor = `rgb(${Lerp([255, 255, 255], [0, 0, 0], (new Date() - this.creation) / max_life_time).join(',')})`
+          let factor = (new Date() - this.creation) / max_life_time;
+          this.radius = Lerp([100], [10], factor)
+          if(this.radius < 0){ return; }
+
           ctx.beginPath();
-          ctx.strokeStyle = outercolor;
+          ctx.strokeStyle = '#ffffff';
           ctx.arc(this.x, this.y, this.radius, 0, Math.PI * 2);
-          ctx.lineWidth = Lerp([5], [0], (new Date() - this.creation) / max_life_time);
+          ctx.lineWidth = Lerp([5], [0], factor);
           ctx.stroke();
+          ctx.fillStyle = 'rgba(255, 255, 255, 0.4)';
+          ctx.fill();
           ctx.closePath();
 
-          let innercolor = `rgb(${Lerp([0, 255, 0], [255, 0, 0], (new Date() - this.creation) / max_life_time).join(',')})`
+          let innercolor = `rgb(${Lerp([0, 255, 0], [255, 0, 0], factor).join(',')})`
           ctx.beginPath();
           ctx.strokeStyle = innercolor;
           ctx.arc(this.x, this.y, 5, 0, Math.PI * 2);
@@ -47,18 +53,21 @@ function Target(x, y, radius) {
           ctx.fill();
           ctx.closePath();
      }
+     this.creation = new Date() - (Math.random() * 1000);
+}
+
+function Message(text) {
+     this.text = text;
      this.creation = new Date();
 }
 
-function spawntargets(){
+function spawntargets() {
      for (let i = 0; i < targetcount - targets.length; i++) {
-          let target = new Target(Math.random() * canvas.width, Math.random() * canvas.height, (Math.random() * 90) + 10)
-          if(Distance(0, target.x, -500, target.y) - target.radius > 700){
-               targets.push(target)
-          }else{
-               i--;
+          let target = new Target(Math.random() * canvas.width, Math.random() * canvas.height)
+          if (target.x - target.radius < 350) {
+               target.x += 350 + target.radius;
           }
-
+          targets.push(target)
      }
 }
 
@@ -71,6 +80,7 @@ window.onload = function() {
      loadscore();
      Update();
 };
+
 document.addEventListener("click", checkhit);
 
 let time = draw();
@@ -79,8 +89,10 @@ function evaluate(distance, radius) {
      let points = 2000;
      points -= distance;
      points -= radius;
-     points -= new Date() - time;
-     if(points < 0){return 0;}
+     points -= (new Date() - time) / max_life_time;
+     if (points < 0) {
+          return 0;
+     }
      return Math.round(points);
 }
 
@@ -96,21 +108,26 @@ function checkhit(event) {
      let dist = Distance(nearest.x, event.clientX, nearest.y, event.clientY)
      if (dist > nearest.radius) {
           hits.push(false);
+          messages[messages.length] = new Message('Missed');
           return;
      }
-     if(dist < 5){
+     if (dist < 5) {
           hits.push(true);
      }
      hits.push(true);
      targets = targets.filter(item => item != nearest);
 
-     score += evaluate(dist, nearest.radius);
+     let points = evaluate(dist, nearest.radius);
+     if (points > 0) {
+          score += points;
+          messages[messages.length] = new Message(`+${points}points`);
+     }
 
      if (Highscore < score) {
           Highscore = score;
      }
+
      time = draw();
-     showscore(score);
      savescore();
 }
 
@@ -119,6 +136,13 @@ function showscore() {
      ctx.fillStyle = "#ffffff";
      ctx.fillText(`Your Score: ${score}`, 10, 50);
      ctx.fillText(`Your Highscore: ${Highscore}`, 10, 90);
+     let hit = 0;
+     hits.forEach((shot, i) => {
+          if (shot) {
+               hit++;
+          }
+     });
+     ctx.fillText(`Accuracy: ${Math.round((hit / hits.length) * 100) || 0}%`, 10, 130)
 }
 
 function Distance(x1, x2, y1, y2) {
@@ -155,8 +179,21 @@ function draw() {
      });
      ctx.closePath();
 
-     showscore()
+     showscore();
+     drawmsgs();
      return new Date();
+}
+
+function drawmsgs() {
+     messages.forEach((msg, i) => {
+          if (new Date() - msg.creation >= 1000) {
+               messages = messages.filter(item => item != msg);
+          }
+          let factor = (new Date() - msg.creation) / 1000;
+          ctx.font = `bold ${Lerp([30], [0], factor)}px Arial`;
+          ctx.fillStyle = `rgb(${Lerp([255, 255, 255], [0, 0, 0], factor).join(',')})`;
+          ctx.fillText(msg.text, Lerp([10], [30], factor), Lerp([canvas.height], [canvas.height - 200], factor));
+     });
 }
 
 function Lerp(first, second, factor) {
@@ -192,20 +229,16 @@ function delettooldtargets() {
 }
 
 document.addEventListener("keydown", (event) => {
-	if(event.keyCode == 84){
+     if (event.keyCode == 84) {
           tracers = !tracers;
      }
-     if(event.keyCode == 69){
+     if (event.keyCode == 69) {
           let hit = 0;
-          let miss = 0;
           hits.forEach((shot, i) => {
-               if(shot){
+               if (shot) {
                     hit++;
-               }else{
-                    miss++;
                }
           });
-          console.log(hit, miss, hits.length, (hit / hits.length) * 100, hits)
           alert(`You collected ${score} points, with an accuracy of ${(hit / hits.length) * 100}%`)
      }
 });
