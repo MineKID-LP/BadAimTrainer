@@ -5,7 +5,7 @@ Aka Undocumented pica shid<br>
 ------------------------------------------<br>
 <h1>Usage</h1>
 Pressing E brings up a menu telling you your score and your accuracy
-Pressing T shows you tracers to targets with in a certain range (i dont know why this exist i just wanted to play around an connect all targets with a line now i have this pls help
+Pressing T shows you tracers to targets with in a certain range (i dont know why this exist i just wanted to play around an connect all targets with a line now i have this pls help<br>
 ------------------------------------------<br>
 ------------------------------------------<br>
 This is a bad aim trainer (currently). It has various features like color Lerping.<br>
