@@ -155,13 +155,6 @@ function draw() {
      });
      ctx.closePath();
 
-     ctx.beginPath();
-     ctx.strokeStyle = '#ffffff';
-     ctx.arc(0, -500, 700, 0, Math.PI * 2);
-     ctx.lineWidth = 1;
-     ctx.stroke();
-     ctx.closePath();
-
      showscore()
      return new Date();
 }
