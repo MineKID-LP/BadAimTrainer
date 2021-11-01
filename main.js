@@ -51,7 +51,7 @@ function Target(x, y, radius) {
 }
 
 function spawntargets(){
-     for (let i = 0; i < targetcount; i++) {
+     for (let i = 0; i < targetcount - targets.length; i++) {
           let target = new Target(Math.random() * canvas.width, Math.random() * canvas.height, (Math.random() * 90) + 10)
           if(Distance(0, target.x, -500, target.y) - target.radius > 700){
                targets.push(target)
