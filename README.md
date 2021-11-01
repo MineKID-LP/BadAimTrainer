@@ -11,5 +11,5 @@ Pressing T shows you tracers to targets with in a certain range (i dont know why
 This is a bad aim trainer (currently). It has various features like color Lerping.<br>
 <br>
 Oh yeah, if you find any "Bugs" those are features. xD<br>
-No seriously please report bugs to: https://github.com/MineKID-LP/minekid-lp.github.io/issues
+No seriously please report bugs to: https://github.com/MineKID-LP/minekid-lp.github.io/issues<br>
 ------------------------------------------<br>
